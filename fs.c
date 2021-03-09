@@ -90,16 +90,20 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   //Start my code
   /*stored in case helpful later
   i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
+  g_oft[ofte].curs; //cursor
   i32 thisDbn = bfsFbnToDbn(inum, fbn); //finds a dbn for a given inum and fbn
   i32 currentPointer = bfsTell(fd); //finds current pointer position
   printf("The value of the seek cursor is: %d.\n", currentPointer);  //helpful for printf format
   */
   i32 inum = bfsFdToInum(fd);
-  //TODO: make buffer modular
-  i8 readBuf[512];
-  //TODO: make read use fbn other than 0
-  bfsRead(inum, 0, readBuf);
-  memmove(buf,readBuf,numb);  
+  i32 currentPointer = bfsTell(fd); //finds current cursor position
+  i32 currentFbn = currentPointer / BYTESPERBLOCK;
+  i32 endFbn = (currentPointer + numb) / BYTESPERBLOCK;
+  i8 readBuf[(endFbn - currentFbn + 1) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
+  //TODO: make read iterate through multiple Fbn
+  bfsRead(inum, currentFbn, readBuf);
+  memmove(buf,readBuf,numb);
+  //keep outside the loop
   fsSeek(fd, numb, SEEK_CUR);
   //TODO: count bytes read and use as return instead of just feeding numb
   return numb;
