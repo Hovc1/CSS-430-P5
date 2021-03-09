@@ -82,47 +82,28 @@ i32 fsOpen(str fname) {
 // File Descriptor 'fd' into 'buf'.  On success, return actual number of bytes
 // read (may be less than 'numb' if we hit EOF).  On failure, abort
 // ============================================================================
-i32 fsRead(i32 fd, i32 numb, void* buf) 
-{
-	if(fd < 0) FATAL(EBADDBN);  // No idea if EBADDBN is correct
-	if(fd > BLOCKSPERDISK) FATAL(EBADDBN);  // Its just a place holder 
-/*	#define EBADCURS    -1    // invalid cursor (byte offset into file)
-	#define EBADDBN     -2    // invalid DBN
-	#define EBADFBN     -3    // invalid FBN
-	#define EBADINUM    -4    // invalid inum
-	#define EBADREAD    -5    // error reading from BFS disk
-	#define EBADWHENCE  -6    // Invalide 'whence' in fsSeek
-	#define EBADWRITE   -7    // error writing to BFS disk
-	#define EBIGFNAME   -8    // filename too big
-	#define EBIGNUMB    -9    // number of bytes to transfer too big
-	#define EDIRFULL    -10   // Directory full
-	#define EDISKCREATE -11   // Failed to create new BFS disk
-	#define EDISKFULL   -12   // BFS disk has no free blocks
-	#define EEXISTS     -13   // BFS disk already exists, so don't format it!
-	#define EFNF        -14   // File Not Found
-	#define ENEGNUMB    -15   // negative number of bytes to transfer
-	#define ENODBN      -16   // no DBN yet allocated - non fatal
-	#define ENODISK     -17   // cannot open BFSDISK
-	#define ENOMEM      -18   // no memory (malloc failed)
-	#define ENULLPTR    -19   // about to deref a NULL pointer
-	#define ENYI        -20   // not yet implemented
-	#define EOFTFULL    -21   // OpenFileTable is full */
-	
-	//??
-	FILE* xxx = fsOpen(/*string file name*/); //from bio.c  FILE* fp = fopen(BFSDISK, "rb+");
-
-
-
-
-
-	// ?close(??);
+i32 fsRead(i32 fd, i32 numb, void* buf) {
 
   // ++++++++++++++++++++++++
   // Insert your code here
   // ++++++++++++++++++++++++
-
-  FATAL(ENYI);                                  // Not Yet Implemented!
-  return 0;
+  //Start my code
+  /*stored in case helpful later
+  i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
+  i32 thisDbn = bfsFbnToDbn(inum, fbn); //finds a dbn for a given inum and fbn
+  i32 currentPointer = bfsTell(fd); //finds current pointer position
+  printf("The value of the seek cursor is: %d.\n", currentPointer);  //helpful for printf format
+  */
+  i32 inum = bfsFdToInum(fd);
+  //TODO: make buffer modular
+  i8 readBuf[512];
+  //TODO: make read use fbn other than 0
+  bfsRead(inum, 0, readBuf);
+  memmove(buf,readBuf,numb);  
+  fsSeek(fd, numb, SEEK_CUR);
+  //TODO: count bytes read and use as return instead of just feeding numb
+  return numb;
+  //End my code
 }
 
 
