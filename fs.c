@@ -88,22 +88,29 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   // Insert your code here
   // ++++++++++++++++++++++++
   //Start my code
-  /*stored in case helpful later
-  i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
-  i32 thisDbn = bfsFbnToDbn(inum, fbn); //finds a dbn for a given inum and fbn
-  i32 currentPointer = bfsTell(fd); //finds current pointer position
-  printf("The value of the seek cursor is: %d.\n", currentPointer);  //helpful for printf format
-  */
-  i32 inum = bfsFdToInum(fd);
-  //TODO: make buffer modular
-  i8 readBuf[512];
-  //TODO: make read use fbn other than 0
-  bfsRead(inum, 0, readBuf);
-  memmove(buf,readBuf,numb);  
-  fsSeek(fd, numb, SEEK_CUR);
-  //TODO: count bytes read and use as return instead of just feeding numb
-  return numb;
-  //End my code
+	/*stored in case helpful later
+	i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
+	i32 thisDbn = bfsFbnToDbn(inum, fbn); //finds a dbn for a given inum and fbn
+	i32 currentPointer = bfsTell(fd); //finds current pointer position
+	printf("The value of the seek cursor is: %d.\n", currentPointer);  //helpful for printf format
+	*/
+
+	i32 inum = bfsFdToInum(fd);
+	i8 readBuf[512];  //TODO: make buffer modular
+
+	//TODO: make read use fbn other than 0 //  I think this works now
+	// bfsRead(inum, 0, readBuf); // old
+  // How do I find the Logical Address?
+  // FBN = floor(LogicalAddress/BlockSize);
+  // FBN + offset = LA%blockSize
+	i32 FBN = floor(fsTell(fd)/512);  // added #include <math.h>
+	bfsRead(inum, FBN, readBuf);
+	memmove(buf,readBuf,numb);  
+	fsSeek(fd, numb, SEEK_CUR);
+  
+	//TODO: count bytes read and use as return instead of just feeding numb
+	return numb;
+	//End my code
 }
 
 
