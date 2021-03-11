@@ -88,29 +88,35 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   // Insert your code here
   // ++++++++++++++++++++++++
   //Start my code
-	/*stored in case helpful later
-	i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
-	g_oft[ofte].curs; //cursor
-	i32 thisDbn = bfsFbnToDbn(inum, fbn); //finds a dbn for a given inum and fbn
-	i32 currentPointer = bfsTell(fd); //finds current pointer position
-	printf("The value of the seek cursor is: %d.\n", currentPointer);  //helpful for printf format
-	*/
+  
+  /*stored in case helpful later
+  i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
+  g_oft[ofte].curs; //cursor
+  i32 thisDbn = bfsFbnToDbn(inum, fbn); //finds a dbn for a given inum and fbn
+  i32 currentPointer = bfsTell(fd); //finds current pointer position
+  printf("The value of the seek cursor is: %d.\n", currentPointer);  //helpful for printf format
+  */
+  i32 inum = bfsFdToInum(fd);
+  i32 currentPointer = bfsTell(fd); //finds current cursor position
+  i32 currentFbn = currentPointer / BYTESPERBLOCK;
+  i32 endFbn = (currentPointer + numb) / BYTESPERBLOCK;
+  i8 totalBlocks = endFbn - currentFbn + 1;
+  i8 readBuf[(totalBlocks) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
+  i8 loopBuf[BYTESPERBLOCK];
+  i32 bufferOffset = 0;
+  for(i32 i = currentFbn; i <= endFbn; i++)
+  {
+    bfsRead(inum, i, loopBuf);
+    memcpy((readBuf + bufferOffset),loopBuf,BYTESPERBLOCK);
+    bufferOffset += BYTESPERBLOCK;
+  }
+  memcpy(buf,(readBuf + (currentPointer % BYTESPERBLOCK)),numb);
+  fsSeek(fd, numb, SEEK_CUR);
+  //TODO: count bytes read and use as return instead of just feeding numb
+  return numb;
+  //End my code
 
-	i32 inum = bfsFdToInum(fd);
-	
-  	i32 currentPointer = bfsTell(fd); //finds current cursor position
-  	i32 currentFbn = currentPointer / BYTESPERBLOCK;
-  	i32 endFbn = (currentPointer + numb) / BYTESPERBLOCK;
-  	i8 readBuf[(endFbn - currentFbn + 1) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
-  	//TODO: make read iterate through multiple Fbn
-  	bfsRead(inum, currentFbn, readBuf);
-  	memmove(buf,readBuf,numb);
- 	//keep outside the loop  
-	
-	fsSeek(fd, numb, SEEK_CUR);
-	//TODO: count bytes read and use as return instead of just feeding numb
-	return numb;
-	//End my code
+  
 }
 
 
