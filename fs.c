@@ -88,6 +88,7 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   // Insert your code here
   // ++++++++++++++++++++++++
   //Start my code
+  
   /*stored in case helpful later
   i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
   g_oft[ofte].curs; //cursor
@@ -114,6 +115,8 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   //TODO: count bytes read and use as return instead of just feeding numb
   return numb;
   //End my code
+
+  
 }
 
 
