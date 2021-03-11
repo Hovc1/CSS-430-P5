@@ -99,11 +99,17 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   i32 currentPointer = bfsTell(fd); //finds current cursor position
   i32 currentFbn = currentPointer / BYTESPERBLOCK;
   i32 endFbn = (currentPointer + numb) / BYTESPERBLOCK;
-  i8 readBuf[(endFbn - currentFbn + 1) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
-  //TODO: make read iterate through multiple Fbn
-  bfsRead(inum, currentFbn, readBuf);
-  memmove(buf,readBuf,numb);
-  //keep outside the loop
+  i8 totalBlocks = endFbn - currentFbn + 1;
+  i8 readBuf[(totalBlocks) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
+  i8 loopBuf[BYTESPERBLOCK];
+  i32 bufferOffset = 0;
+  for(i32 i = currentFbn; i <= endFbn; i++)
+  {
+    bfsRead(inum, i, loopBuf);
+    memcpy((readBuf + bufferOffset),loopBuf,BYTESPERBLOCK);
+    bufferOffset += BYTESPERBLOCK;
+  }
+  memcpy(buf,(readBuf + (currentPointer % BYTESPERBLOCK)),numb);
   fsSeek(fd, numb, SEEK_CUR);
   //TODO: count bytes read and use as return instead of just feeding numb
   return numb;
