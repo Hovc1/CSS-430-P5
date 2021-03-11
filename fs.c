@@ -88,7 +88,6 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   // Insert your code here
   // ++++++++++++++++++++++++
   //Start my code
-  
   /*stored in case helpful later
   i32 ofte = bfsFindOFTE(inum); //finds the OFTE, useful for cursor
   g_oft[ofte].curs; //cursor
@@ -98,13 +97,13 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   */
   i32 inum = bfsFdToInum(fd);
   i32 currentPointer = bfsTell(fd); //finds current cursor position
-  i32 currentFbn = currentPointer / BYTESPERBLOCK;
+  i32 startFbn = currentPointer / BYTESPERBLOCK;
   i32 endFbn = (currentPointer + numb) / BYTESPERBLOCK;
-  i8 totalBlocks = endFbn - currentFbn + 1;
+  i8 totalBlocks = endFbn - startFbn + 1;
   i8 readBuf[(totalBlocks) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
   i8 loopBuf[BYTESPERBLOCK];
   i32 bufferOffset = 0;
-  for(i32 i = currentFbn; i <= endFbn; i++)
+  for(i32 i = startFbn; i <= endFbn; i++)
   {
     bfsRead(inum, i, loopBuf);
     memcpy((readBuf + bufferOffset),loopBuf,BYTESPERBLOCK);
@@ -115,8 +114,6 @@ i32 fsRead(i32 fd, i32 numb, void* buf) {
   //TODO: count bytes read and use as return instead of just feeding numb
   return numb;
   //End my code
-
-  
 }
 
 
@@ -188,7 +185,37 @@ i32 fsWrite(i32 fd, i32 numb, void* buf) {
   // ++++++++++++++++++++++++
   // Insert your code here
   // ++++++++++++++++++++++++
-
-  FATAL(ENYI);                                  // Not Yet Implemented!
+  //Start my code
+  //copied from read
+  i32 inum = bfsFdToInum(fd);
+  i32 currentPointer = bfsTell(fd); //finds current cursor position
+  i32 startFbn = currentPointer / BYTESPERBLOCK;
+  i32 endFbn = (currentPointer + numb) / BYTESPERBLOCK;
+  i8 totalBlocks = endFbn - startFbn + 1;
+  i8 writeBuf[(totalBlocks) * BYTESPERBLOCK]; //buffer is 512 * number of fbn spanned i.e. 0-3 is 4
+  i8 blockBuf[BYTESPERBLOCK];
+  //end copy
+  //copies first fbn into writeBuf
+  bfsRead(inum, startFbn, blockBuf);
+  memcpy(writeBuf,blockBuf,BYTESPERBLOCK);
+  //copies last fbn into writeBuf, if more than one fbn being written to
+  if(totalBlocks > 1)
+  {
+    bfsRead(inum, endFbn, blockBuf);
+    memcpy(writeBuf + (totalBlocks - 1) * BYTESPERBLOCK,blockBuf,BYTESPERBLOCK);
+  }
+  //write buf into writeBuf with offset
+  memcpy(writeBuf + currentPointer%BYTESPERBLOCK,buf,numb);
+  //end write
+  i32 bufferOffset = 0;
+  for(i32 i = startFbn; i <= endFbn; i++)
+  {
+    memcpy(blockBuf, writeBuf + bufferOffset, BYTESPERBLOCK);
+    i32 thisDbn = bfsFbnToDbn(inum, i); //finds a dbn for a given inum and fbn
+    bioWrite(thisDbn, blockBuf);
+    bufferOffset += BYTESPERBLOCK;
+  }
+  fsSeek(fd, numb, SEEK_CUR);
+  //End my code
   return 0;
 }
