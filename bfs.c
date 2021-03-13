@@ -38,13 +38,13 @@ i32 bfsAllocBlock(i32 inum, i32 fbn) {
 
     if (dbnIndirect == 0) {               // not yet allocated
       dbnIndirect = bfsFindFreeBlock();
-      pinode->indirect = dbn;
+      pinode->indirect = dbnIndirect;
     }
 
     bioRead(dbnIndirect, buf16);
-
     buf16[fbn - NUMDIRECT] = dbn;
     bioWrite(dbnIndirect, buf16);
+    bioWrite(DBNINODES, buf8);
   }
 
   return dbn;                             // allocated DBN
